@@ -38,7 +38,7 @@ Multi-purpose sound and light machine designed to run on raspberry pi.
 
 1. Install Python dependencies:
     ```bash
-    python3 .m venv venv
+    python3 -m venv venv
     pip install -r requirements.txt
     ```
 
