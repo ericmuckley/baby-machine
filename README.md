@@ -38,9 +38,19 @@ Multi-purpose sound and light machine designed to run on raspberry pi.
 
 1. Install Python dependencies:
     ```bash
+
+    # Create python virtual environment
     python3 -m venv venv
+
+    # Activate virtual environment
     . venv/bin/activate
+
+    # Update pip
     pip install -U pip
+
+    # Install dependencies
+    # We are not using a requirements.txt file so that
+    # package versions stay flexible for the particular pi OS
     pip install flask numpy opencv-python pyaudio picamera2
     ```
 
