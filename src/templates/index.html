@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Machine</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-primary: #a78bfa;
+            --color-accent-1: #34d399;
+            --color-accent-2: #f472b6;
+        }
+        
+        @layer base {
+            body {
+                @apply antialiased bg-gray-900 text-gray-600 min-h-screen;
+            }
+        }
+        
+        @layer components {
+            .btn-led {
+                @apply text-white font-bold py-4 px-6 rounded-full transition duration-200 transform space-x-2;
+            }
+            .frame {
+                @apply rounded-3xl p-6 border border-gray-600;
+            }
+            .label {
+                @apply text-center block text-gray-400 font-bold text-xl mb-4 space-x-2;
+            }
+        }
+    </style>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+    <div x-data="babyMachine()" x-init="init()" class="container mx-auto p-4 space-y-4">
+
+        <!-- LED Controls -->
+        <div class="frame">
+            <div class="label"><span>💡</span><span>LED Controls</span></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- LED 1 -->
+                <button 
+                    @click="toggleLED('led1')"
+                    :class="leds.led1 ? 'bg-red-600' : 'bg-transparent'"
+                    class="btn-led"
+                >
+                    <span>🔆</span>
+                    <span>Red</span>
+                </button>
+
+                <!-- LED 2 -->
+                <button 
+                    @click="toggleLED('led2')"
+                    :class="leds.led2 ? 'bg-yellow-600' : 'bg-transparent'"
+                    class="btn-led"
+                >
+                    <span>🔆</span>
+                    <span>Yellow</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Video Feed -->
+        <div class="frame">
+            <div class="label"><span>🎥</span><span>Video Feed</span></div>
+            <div class="aspect-video bg-gray-950 rounded-lg overflow-hidden">
+                <img src="/video_feed" alt="Video Feed" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <!-- Audio Feed -->
+        <div class="frame">
+            <div class="label"><span>🎤</span><span>Audio Feed</span></div>
+            <div class="flex items-center justify-center h-full min-h-[200px]">
+                <div class="text-center">
+                    <audio controls class="w-full">
+                        <source src="/audio_feed" type="audio/x-raw">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <p class="text-gray-300 mt-2">Microphone Audio Stream</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- White Noise Control -->
+        <div class="frame">
+            <div class="label"><span>🔊</span><span>White Noise Generator</span></div>
+            
+            <div class="space-y-4">
+                <!-- Volume Slider -->
+                <div>
+                    <label class="block text-gray-200 font-medium mb-2">
+                        Volume: <span x-text="Math.round(volume * 100) + '%'"></span>
+                    </label>
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        :value="volume * 100"
+                        @input="volume = $event.target.value / 100; updateVolume()"
+                        class="w-full h-3 bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
+                </div>
+
+                <!-- Control Button -->
+                <div>
+                    <button 
+                        @click="isPlaying ? stopWhiteNoise() : startWhiteNoise()"
+                        :class="isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-accent-1 hover:bg-accent-1/90'"
+                        class="w-full text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        <div class="flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path x-show="!isPlaying" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                                <path x-show="isPlaying" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"/>
+                            </svg>
+                            <span x-text="isPlaying ? 'Stop White Noise' : 'Start White Noise'"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
