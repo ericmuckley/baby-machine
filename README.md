@@ -2,6 +2,15 @@
 
 Multi-purpose sound and light machine designed to run on [raspberry pi](https://www.raspberrypi.com/) with remote access via mobile-friendly interface.
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+![Flask](https://img.shields.io)
+
+![Tailwind CSS](https://img.shields.io)
+
+![Alpine.js](https://img.shields.io)
+
+
 ![Screenshot](static/screenhot.png)
 
 ## Features
