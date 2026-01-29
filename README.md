@@ -1,30 +1,24 @@
 # Baby machine
 
-Multi-purpose sound and light machine designed to run on raspberry, with pimobile-friendly interface accessed remotely.
+Multi-purpose sound and light machine designed to run on [raspberry pi](https://www.raspberrypi.com/) with remote access via mobile-friendly interface.
 
 ![Screenshot](static/screenhot.png)
 
 ## Features
 
-### Frontend (Single HTML Page)
-- **Alpine.js** for reactive interactivity
-- **TailwindCSS** for modern, responsive styling
+### Frontend
+- **Alpine.js** for reactivity
+- **TailwindCSS** for responsive styling
 - **Three LED Control Buttons** to toggle LEDs on/off
 - **Video Feed** displaying live camera stream
 - **Audio Feed** for monitoring microphone input
 - **White Noise Generator** with volume slider control
 
-### Backend (Flask Application)
-- LED control endpoints for toggling three LEDs
+### Backend (Flask Web Server)
+- LED control endpoints for toggling LEDs
 - Video streaming from camera
 - Audio streaming from microphone
 - White noise generation with adjustable volume
-
-
-## Stack
-
-- Flask web server
-- Alpine JS + Tailwind single page app
 
 
 ## Local Development (Testing on Laptop)
@@ -54,9 +48,7 @@ You can test the app locally on your Mac/PC before deploying to the Pi:
 
 The app will automatically use your laptop's webcam and microphone instead of Pi hardware. If no camera is detected, a placeholder image will be shown.
 
-
 ## Setup on Rasberry Pi
-
 
 1. SSH into the raspberry pi (`ssh pi@pi_ip_address`) or open a termial in the raspberry pi.
 
