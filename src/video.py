@@ -1,0 +1,113 @@
+import os
+import threading
+import time
+
+import cv2
+import numpy as np
+
+# Check if running in development/mock mode (for local testing without Pi hardware)
+DEV_MODE = os.environ.get("DEV_MODE", "false").lower() == "true"
+
+# Try to import picamera2 for Raspberry Pi
+PICAMERA2_AVAILABLE = False
+if not DEV_MODE:
+    try:
+        from picamera2 import Picamera2
+
+        PICAMERA2_AVAILABLE = True
+    except ImportError:
+        pass
+
+if DEV_MODE:
+    print("Running in DEV_MODE - using laptop camera/mic instead of Pi hardware")
+
+
+class CameraManager:
+    """Singleton camera manager to handle camera lifecycle properly"""
+
+    def __init__(self):
+        self.picam2 = None
+        self.cv_camera = None
+        self.lock = threading.Lock()
+        self.started = False
+
+    def _init_picamera(self):
+        """Initialize Raspberry Pi camera"""
+        if self.picam2 is None:
+            self.picam2 = Picamera2()
+            config = self.picam2.create_preview_configuration(main={"size": (640, 480)})
+            self.picam2.configure(config)
+
+        if not self.started:
+            self.picam2.start()
+            self.started = True
+
+    def _init_cv_camera(self):
+        """Initialize OpenCV camera"""
+        if self.cv_camera is None or not self.cv_camera.isOpened():
+            self.cv_camera = cv2.VideoCapture(0)
+
+    def get_frame(self):
+        """Get a single frame from the camera"""
+        with self.lock:
+            if PICAMERA2_AVAILABLE:
+                self._init_picamera()
+                frame = self.picam2.capture_array()
+                # Convert RGB to BGR for JPEG encoding
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            else:
+                self._init_cv_camera()
+                success, frame = self.cv_camera.read()
+                if not success:
+                    # If no camera, generate a placeholder
+                    frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                    cv2.putText(
+                        frame,
+                        "No Camera Detected",
+                        (150, 240),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        (255, 255, 255),
+                        2,
+                    )
+
+            return frame
+
+    def release(self):
+        """Release camera resources"""
+        with self.lock:
+            if self.cv_camera:
+                self.cv_camera.release()
+                self.cv_camera = None
+            if self.picam2 and self.started:
+                self.picam2.stop()
+                self.started = False
+                self.picam2.close()
+                self.picam2 = None
+
+
+# Create singleton camera manager
+camera_manager = CameraManager()
+
+
+def generate_video_frames():
+    """Generate video frames from camera at 2 FPS for better performance"""
+    try:
+        while True:
+            frame = camera_manager.get_frame()
+
+            # Encode frame as JPEG
+            ret, buffer = cv2.imencode(".jpg", frame)
+            frame_bytes = buffer.tobytes()
+
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n"
+            )
+
+            time.sleep(0.25)  # Rate limit to 2 FPS for lower CPU/bandwidth usage
+    except GeneratorExit:
+        # Client disconnected, this is normal on page refresh
+        pass
+    except Exception as e:
+        print(f"Video error: {e}")
