@@ -112,7 +112,7 @@ The app will automatically use your laptop's webcam and microphone instead of Pi
 
 1. Open a web browser and navigate to:
     ```
-    http://localhost:5000
+    http://localhost:3000
     ```
 
     Or from another device on the same network:

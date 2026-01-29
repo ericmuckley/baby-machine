@@ -1,4 +1,22 @@
 import os
+import sys
+
+# Suppress ALSA/JACK warnings on Raspberry Pi BEFORE importing audio libraries
+# These warnings are harmless but noisy
+if sys.platform == 'linux':
+    os.environ['JACK_NO_START_SERVER'] = '1'
+    # Suppress ALSA error messages
+    try:
+        from ctypes import CDLL, c_char_p, c_int, CFUNCTYPE
+        ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+        def py_error_handler(filename, line, function, err, fmt):
+            pass  # Silently ignore ALSA errors
+        c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
+        asound = CDLL("libasound.so.2")
+        asound.snd_lib_error_set_handler(c_error_handler)
+    except Exception:
+        pass
+
 import cv2
 import numpy as np
 import pyaudio
@@ -37,12 +55,30 @@ class WhiteNoiseGenerator:
         
         sample_rate = 44100
         
+        # Find the default output device
+        device_index = None
+        try:
+            # Try to find a working output device
+            default_info = self.p.get_default_output_device_info()
+            device_index = default_info.get('index')
+        except Exception:
+            # Fall back to searching for any output device
+            for i in range(self.p.get_device_count()):
+                try:
+                    info = self.p.get_device_info_by_index(i)
+                    if info.get('maxOutputChannels', 0) > 0:
+                        device_index = i
+                        break
+                except Exception:
+                    continue
+        
         try:
             self.audio_stream = self.p.open(
                 format=pyaudio.paFloat32,
                 channels=1,
                 rate=sample_rate,
-                output=True
+                output=True,
+                output_device_index=device_index
             )
             
             while self.playing:
