@@ -6,31 +6,7 @@
     <title>Baby Machine</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style type="text/tailwindcss">
-        @theme {
-            --color-primary: #a78bfa;
-            --color-accent-1: #34d399;
-            --color-accent-2: #f472b6;
-        }
-        
-        @layer base {
-            body {
-                @apply antialiased bg-gray-900 text-gray-600 min-h-screen;
-            }
-        }
-        
-        @layer components {
-            .btn-led {
-                @apply text-white font-bold py-4 px-6 rounded-full transition duration-200 transform space-x-2;
-            }
-            .frame {
-                @apply rounded-3xl p-6 border border-gray-600;
-            }
-            .label {
-                @apply text-center block text-gray-400 font-bold text-xl mb-4 space-x-2;
-            }
-        }
-    </style>
+    {% include '_styles.html' %}
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
@@ -40,26 +16,17 @@
         <!-- LED Controls -->
         <div class="frame">
             <div class="label"><span>💡</span><span>LED Controls</span></div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- LED 1 -->
-                <button 
-                    @click="toggleLED('led1')"
-                    :class="leds.led1 ? 'bg-red-600' : 'bg-transparent'"
-                    class="btn-led"
-                >
-                    <span>🔆</span>
-                    <span>Red</span>
-                </button>
-
-                <!-- LED 2 -->
-                <button 
-                    @click="toggleLED('led2')"
-                    :class="leds.led2 ? 'bg-yellow-600' : 'bg-transparent'"
-                    class="btn-led"
-                >
-                    <span>🔆</span>
-                    <span>Yellow</span>
-                </button>
+            <div class="flex flex-wrap justify-center gap-4">
+                <template x-for="led in ledButtons" :key="led.id">
+                    <button 
+                        @click="toggleLED(led.id)"
+                        :class="led.state ? `bg-${led.color}` : 'bg-transparent'"
+                        class="btn-led w-full md:w-auto"
+                    >
+                        <span x-text="led.emoji"></span>
+                        <span x-text="led.label"></span>
+                    </button>
+                </template>
             </div>
         </div>
 
@@ -109,7 +76,7 @@
                     <button 
                         @click="isPlaying ? stopWhiteNoise() : startWhiteNoise()"
                         :class="isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-accent-1 hover:bg-accent-1/90'"
-                        class="w-full text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        class="w-full btn-led">
                         <div class="flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path x-show="!isPlaying" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>

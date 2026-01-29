@@ -25,10 +25,59 @@ Multi-purpose sound and light machine designed to run on raspberry pi.
 - Alpine JS + Tailwind single page app
 
 
-## Setup
+## Local Development (Testing on Laptop)
+
+You can test the app locally on your Mac/PC before deploying to the Pi:
+
+1. Install portaudio (required for pyaudio on macOS):
+    ```bash
+    brew install portaudio
+    ```
+
+2. Create and activate a virtual environment:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+3. Install Python packages:
+    ```bash
+    pip install flask opencv-python numpy pyaudio
+    ```
+
+4. Run the app in dev mode:
+    ```bash
+    DEV_MODE=true python -m app
+    ```
+
+The app will automatically use your laptop's webcam and microphone instead of Pi hardware. If no camera is detected, a placeholder image will be shown.
+
+
+## Setup on Rasberry Pi
 
 
 1. SSH into the raspberry pi (`ssh pi@pi_ip_address`) or open a termial in the raspberry pi.
+
+
+1. Update the pi and install system dependencies:
+    ```bash
+    sudo apt update
+    sudo apt full-upgrade -y
+    sudo apt install -y \
+        python3.11-dev \
+        python3-numpy \
+        python3-opencv \
+        python3-picamera2 \
+        python3-pyaudio \
+        alsa-utils \
+        libopenblas-dev \
+        build-essential \
+        libjpeg-dev \
+        libffi-dev \
+        libssl-dev \
+        ffmpeg
+    ```
+
 
 1. Clone the repository:
     ```bash
@@ -36,40 +85,30 @@ Multi-purpose sound and light machine designed to run on raspberry pi.
     cd baby-machine
     ```
 
-1. Install Python dependencies:
-    ```bash
-
-    # Create python virtual environment
-    python3 -m venv venv
-
-    # Activate virtual environment
-    . venv/bin/activate
-
-    # Update pip
-    pip install -U pip
-
-    # Install dependencies
-    # We are not using a requirements.txt file so that
-    # package versions stay flexible for the particular pi OS
-    pip install flask numpy opencv-python pyaudio picamera2
-    ```
-
-    If you encounter issues installing PyAudio, you may need to install PortAudio first:
+1. Create a Python 3.11 venv with system packages, so `cv2`, `picamera2`, and `numpy` installed via apt are visible:
 
     ```bash
-    sudo apt install python3-pyaudio
+    python3.11 -m venv --system-site-packages ~/venv
     ```
 
-    For OpenCV on Raspberry Pi:
+    Activate the new environment:
+
     ```bash
-    sudo apt-get install python3-opencv
+    source ~/venv/bin/activate
     ```
 
-1. Start the Flask application:
+1. Upgrade pip & install Python-only packages
+
     ```bash
-    . venv/bin/activate
-    python app.py
+    pip install --upgrade pip setuptools wheel
+    pip install flask
     ```
+
+    * We don’t pip-install OpenCV, NumPy, or Picamera2 — system packages are used.
+    * Flask is pure Python, so pip is fine.
+
+1. Run the app: `python -m app`
+
 
 1. Open a web browser and navigate to:
     ```

@@ -1,18 +1,23 @@
+import os
 import cv2
 import numpy as np
 import pyaudio
 import time
-from settings import DEVICE
+
+# Check if running in development/mock mode (for local testing without Pi hardware)
+DEV_MODE = os.environ.get('DEV_MODE', 'false').lower() == 'true'
 
 # Try to import picamera2 for Raspberry Pi
-try:
-    if DEVICE == 'RPI':
+PICAMERA2_AVAILABLE = False
+if not DEV_MODE:
+    try:
         from picamera2 import Picamera2
         PICAMERA2_AVAILABLE = True
-    else:
-        PICAMERA2_AVAILABLE = False
-except ImportError:
-    PICAMERA2_AVAILABLE = False
+    except ImportError:
+        pass
+
+if DEV_MODE:
+    print("Running in DEV_MODE - using laptop camera/mic instead of Pi hardware")
 
 class WhiteNoiseGenerator:
     """Encapsulates white noise generation state and functionality"""
@@ -75,7 +80,7 @@ def generate_video_frames():
     picam2 = None
     
     try:
-        if DEVICE == 'RPI' and PICAMERA2_AVAILABLE:
+        if PICAMERA2_AVAILABLE:
             # Use Raspberry Pi Camera Module
             print("Using Raspberry Pi Camera Module")
             picam2 = Picamera2()
@@ -97,7 +102,6 @@ def generate_video_frames():
                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
         else:
             # Use OpenCV for PC/USB camera
-            print(f"Using OpenCV camera (DEVICE={DEVICE})")
             camera = cv2.VideoCapture(0)
             
             while True:

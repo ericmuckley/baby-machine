@@ -1,9 +1,9 @@
 function babyMachine() {
     return {
-        leds: {
-            led1: false,
-            led2: false,
-        },
+        ledButtons: [
+            { id: 'led1', label: 'Red', color: 'red-600', emoji: '🔆', state: false },
+            { id: 'led2', label: 'Yellow', color: 'yellow-600', emoji: '🔆', state: false }
+        ],
         volume: 0.5,
         isPlaying: false,
 
@@ -16,7 +16,9 @@ function babyMachine() {
             try {
                 const response = await fetch('/led_status');
                 const data = await response.json();
-                this.leds = data;
+                this.ledButtons.forEach(led => {
+                    led.state = data[led.id] || false;
+                });
             } catch (error) {
                 console.error('Failed to load LED states:', error);
             }
@@ -34,7 +36,10 @@ function babyMachine() {
                 const data = await response.json();
                 
                 if (data.success) {
-                    this.leds[ledId] = data.state;
+                    const led = this.ledButtons.find(l => l.id === ledId);
+                    if (led) {
+                        led.state = data.state;
+                    }
                 }
             } catch (error) {
                 console.error('Failed to toggle LED:', error);
