@@ -110,57 +110,88 @@ class WhiteNoiseGenerator:
 # Create a singleton instance for the app to use
 white_noise_generator = WhiteNoiseGenerator()
 
-def generate_video_frames():
-    """Generate video frames from camera"""
-    camera = None
-    picam2 = None
+
+class CameraManager:
+    """Singleton camera manager to handle camera lifecycle properly"""
     
-    try:
-        if PICAMERA2_AVAILABLE:
-            # Use Raspberry Pi Camera Module
-            print("Using Raspberry Pi Camera Module")
-            picam2 = Picamera2()
-            config = picam2.create_preview_configuration(main={"size": (640, 480)})
-            picam2.configure(config)
-            picam2.start()
-            
-            while True:
-                frame = picam2.capture_array()
-                
+    def __init__(self):
+        self.picam2 = None
+        self.cv_camera = None
+        self.lock = threading.Lock()
+        self.started = False
+    
+    def _init_picamera(self):
+        """Initialize Raspberry Pi camera"""
+        if self.picam2 is None:
+            self.picam2 = Picamera2()
+            config = self.picam2.create_preview_configuration(main={"size": (640, 480)})
+            self.picam2.configure(config)
+        
+        if not self.started:
+            self.picam2.start()
+            self.started = True
+    
+    def _init_cv_camera(self):
+        """Initialize OpenCV camera"""
+        if self.cv_camera is None or not self.cv_camera.isOpened():
+            self.cv_camera = cv2.VideoCapture(0)
+    
+    def get_frame(self):
+        """Get a single frame from the camera"""
+        with self.lock:
+            if PICAMERA2_AVAILABLE:
+                self._init_picamera()
+                frame = self.picam2.capture_array()
                 # Convert RGB to BGR for JPEG encoding
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-                
-                # Encode frame as JPEG
-                ret, buffer = cv2.imencode('.jpg', frame)
-                frame = buffer.tobytes()
-                
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        else:
-            # Use OpenCV for PC/USB camera
-            camera = cv2.VideoCapture(0)
-            
-            while True:
-                success, frame = camera.read()
+            else:
+                self._init_cv_camera()
+                success, frame = self.cv_camera.read()
                 if not success:
                     # If no camera, generate a placeholder
                     frame = np.zeros((480, 640, 3), dtype=np.uint8)
                     cv2.putText(frame, 'No Camera Detected', (150, 240), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-                
-                # Encode frame as JPEG
-                ret, buffer = cv2.imencode('.jpg', frame)
-                frame = buffer.tobytes()
-                
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            
+            return frame
+    
+    def release(self):
+        """Release camera resources"""
+        with self.lock:
+            if self.cv_camera:
+                self.cv_camera.release()
+                self.cv_camera = None
+            if self.picam2 and self.started:
+                self.picam2.stop()
+                self.started = False
+                self.picam2.close()
+                self.picam2 = None
+
+
+# Need threading for the lock
+import threading
+
+# Create singleton camera manager
+camera_manager = CameraManager()
+
+
+def generate_video_frames():
+    """Generate video frames from camera"""
+    try:
+        while True:
+            frame = camera_manager.get_frame()
+            
+            # Encode frame as JPEG
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame_bytes = buffer.tobytes()
+            
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+    except GeneratorExit:
+        # Client disconnected, this is normal on page refresh
+        pass
     except Exception as e:
         print(f"Video error: {e}")
-    finally:
-        if camera:
-            camera.release()
-        if picam2:
-            picam2.stop()
 
 def generate_audio_stream():
     """Generate audio stream from microphone"""
