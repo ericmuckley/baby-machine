@@ -4,11 +4,11 @@ Multi-purpose sound and light machine designed to run on [raspberry pi](https://
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-![Flask](https://img.shields.io)
+![Flask](https://img.shields.io/badge/Flask-3.0-blue?logo=flask&logoColor=white)
 
-![Tailwind CSS](https://img.shields.io)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)
 
-![Alpine.js](https://img.shields.io)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC0D0?logo=alpine.js&logoColor=black)
 
 
 ![Screenshot](static/screenhot.png)
