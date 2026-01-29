@@ -13,7 +13,7 @@ Multi-purpose sound and light machine designed to run on [raspberry pi](https://
 
 ![Screenshot](static/screenhot.png)
 
-## Features
+## Stack
 
 ### Frontend
 - **Alpine.js** for reactivity
