@@ -78,36 +78,7 @@ The app will automatically use your laptop's webcam and microphone instead of Pi
         ffmpeg
     ```
 
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/ericmuckley/baby-machine.git
-    cd baby-machine
-    ```
-
-1. Create a Python 3.11 venv with system packages, so `cv2`, `picamera2`, and `numpy` installed via apt are visible:
-
-    ```bash
-    python3.11 -m venv --system-site-packages ~/venv
-    ```
-
-    Activate the new environment:
-
-    ```bash
-    source ~/venv/bin/activate
-    ```
-
-1. Upgrade pip & install Python-only packages
-
-    ```bash
-    pip install --upgrade pip setuptools wheel
-    pip install flask
-    ```
-
-    * We don’t pip-install OpenCV, NumPy, or Picamera2 — system packages are used.
-    * Flask is pure Python, so pip is fine.
-
-1. Run the app: `python -m app`
+1. Copy the [deploy.sh](./deploy.sh) srcript to the pi and run it. 
 
 
 1. Open a web browser and navigate to:
@@ -151,7 +122,3 @@ for pin in LED_PINS.values():
 # In the toggle_led function:
 GPIO.output(LED_PINS[led_id], GPIO.HIGH if led_states[led_id] else GPIO.LOW)
 ```
-
-## License
-
-MIT License
