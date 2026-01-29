@@ -1,6 +1,8 @@
 # Baby machine
 
-Multi-purpose sound and light machine designed to run on raspberry pi.
+Multi-purpose sound and light machine designed to run on raspberry, with pimobile-friendly interface accessed remotely.
+
+![Screenshot](static/screenhot.png)
 
 ## Features
 
